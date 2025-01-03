@@ -6,7 +6,7 @@ SETLOCAL DISABLEDELAYEDEXPANSION
 
 :::: Variabili di configurazione globale ::::
 
-    set Version=v0.9.7
+    set Version=v0.9.8
 
     :: Cartella dove si trova attualmente questo batch
     set InstallationFolder=%CD%
@@ -105,7 +105,9 @@ SETLOCAL DISABLEDELAYEDEXPANSION
     call docker desktop start
 
     echo.
-    echo "Attendi che la finestra di docker completi l'avvio prima di procedere"
+    echo Attendi che la finestra di docker completi l'avvio prima di procedere
+    echo.
+
     pause
 
     :: lancio la configurazione dello stack
