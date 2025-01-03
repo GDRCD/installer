@@ -3,18 +3,25 @@ chcp 1252 >nul
 SETLOCAL ENABLEEXTENSIONS
 SETLOCAL DISABLEDELAYEDEXPANSION
 
+
 :::: Variabili di configurazione globale ::::
 
-    set Version=v0.7.0
+    set Version=v0.8.7
+
+    :: Cartella dove si trova attualmente questo batch
+    set InstallationFolder=%CD%
 
     :: Cartella di installazione dello stack
-    set InstallationFolder=%CD%\stack
+    set StackFolder=%InstallationFolder%\stack
 
-    :: Percorso file di configurazione .env dello stack
-    set EnvFile=%InstallationFolder%\.env
+    :: File di configurazione .env dello stack
+    set EnvFile=%StackFolder%\.env
 
-    :: Percorso file di connessione al db di GDRCD ::
-    set GdrcdOverrides=%InstallationFolder%\www\GDRCD\core\db_overrides.php
+    :: Percorso di installazione di GDRCD
+    set GdrcdFolder=%StackFolder%\www\GDRCD
+
+    :: File di connessione al db di GDRCD ::
+    set GdrcdOverrides=%GdrcdFolder%\core\db_overrides.php
 
 
 :::: Logica di Business ::::
@@ -29,7 +36,7 @@ SETLOCAL DISABLEDELAYEDEXPANSION
     echo     Git
     echo.
 
-    call :AskForUserConfirmation
+    call :AskForUserConfirmation "Vuoi procedere con l'installazione dei programmi elencati?"
 
     echo.
 
@@ -42,36 +49,21 @@ SETLOCAL DISABLEDELAYEDEXPANSION
 
     :: chiedo all'utente se vuole installare nella directory corrente
     echo Sto per scaricare una versione aggiornata di GDRCD/stack e GDRCD/GDRCD
-    echo Cartella di installazione: %InstallationFolder%
+    echo Cartella di installazione: %StackFolder%
     echo.
 
-    call :AskForUserConfirmation
+    :: TODO: scelta di una cartella alternativa
+    call :AskForUserConfirmation "Sei sicuro di voler installare nella cartella indicata?"
 
     echo.
 
     :: uso git per scaricare lo stack
-    echo Sto scaricando una versione aggiornata di GDRCD/stack...
-    call git clone https://github.com/GDRCD/stack.git %InstallationFolder%
-
-    :: normalizzo i line endings in LF perchè altrimenti si presentano problemi sotto WSL
-    cd %InstallationFolder%
-    git config core.autocrlf false
-    git config core.eol lf
-    git ls-files -z >nul
-    git checkout .
-    cd ..
+    call :GitClone %StackFolder% "GDRCD/stack"
 
     echo.
 
     :: uso git per scaricare GDRCD
-    echo Sto scaricando una versione aggiornata di GDRCD/GDRCD...
-    call git clone https://github.com/GDRCD/GDRCD.git %InstallationFolder%\www\GDRCD
-
-    :: uso git per passare sul branch dev6 #TODO: l'utente dovrà poter scegliere la versione
-    cd %InstallationFolder%\www\GDRCD
-    call git checkout -b dev6 --track origin/dev6
-    cd %InstallationFolder%
-    cd ..
+    call :GitClone %GdrcdFolder% "GDRCD/GDRCD" "dev6"
 
     echo.
 
@@ -94,27 +86,27 @@ SETLOCAL DISABLEDELAYEDEXPANSION
     call :FileReplaceValue "PMA_PORT=" "PMA_PORT=8901" %EnvFile%
     call :FileReplaceValue "MYSQL_DATABASE=" "MYSQL_DATABASE=gdrcd" %EnvFile%
 
-    ::echo ErrorLevel: %ERRORLEVEL%
-    :: rimuovo eventuali carriage return presenti nel file: non piace al sottosistema linux
-    :: call wsl sed -i 's/\r//' ./stack/run
     echo.
 
     :: genero il file db_overrides.php di GDRCD
     echo Procedo con la configurazione dei parametri di connessione al database di GDRCD
     echo Creazione del file db_overrides.php...
 
-    call copy %InstallationFolder%\www\GDRCD\core\db_config.php %GdrcdOverrides%
+    call copy %StackFolder%\www\GDRCD\core\db_config.php %GdrcdOverrides%
 
     echo.
     echo Configurazione del file db_overrides.php in corso...
 
     call :FileReplaceValue "'localhost'" "'gdrcd_database'" %GdrcdOverrides%
 
-    ::call type %GdrcdOverrides%
     echo.
 
     :: avvio il docker engine
-    docker desktop start
+    call docker desktop start
+
+    echo.
+    echo "Attendi che la finestra di docker completi l'avvio prima di procedere"
+    pause
 
     :: lancio la configurazione dello stack
     call :StackInstallAndStart
@@ -125,15 +117,48 @@ SETLOCAL DISABLEDELAYEDEXPANSION
 
 :::: Funzioni ::::
 
-    :StackInstallAndStart
+    :: Effettua il git clone del repository e si assicura di normalizzare l'uso del Line Feed per i files
+    :GitClone
+        ::          %~1 [in] - Repository cloning folder
+        ::          %~2 [in] - Repository in the form of "vendor/package"
+        ::          %~3 [in] - Optional - branch to checkout
+
+        set RepoFolder=%~1
+        set Repository=%~2
+        set Branch=%~3
+
+        :: uso git per scaricare lo stack
+        echo Sto scaricando %Repository%...
+        call git clone https://github.com/%Repository%.git %RepoFolder%
+
+        cd %RepoFolder%
+
+        :: Se indicato un particolare branch ne faccio il checkout
+        if "%Branch%" neq "" (
+            call git checkout -b %Branch% --track origin/%Branch%
+        )
+
+        :: normalizzo i line endings in LF perchè altrimenti si presentano problemi sotto WSL
+        git config core.autocrlf false
+        git config core.eol lf
+        git ls-files -z >nul
+        git checkout .
+
         cd %InstallationFolder%
+        exit /B 0
+
+    :: Si occupa di installare lo stack, buildare i container e avviarli
+    :StackInstallAndStart
+        :: no params
+        :: no return
+        cd %StackFolder%
         :: rimuove eventuali CarriageReturn nel file .env
         call wsl sed -i 's/\r//' .env
         :: installa, builda i container e li avvia
         call wsl sudo ./run install
         call wsl ./run build
         call wsl ./run start
-        cd ..
+        cd %InstallationFolder%
         exit /B 0
 
     :: Verifica la presenza di wsl configurato, in caso non lo fosse
@@ -177,7 +202,14 @@ SETLOCAL DISABLEDELAYEDEXPANSION
     :: Apre un prompt per chiedere all'utente conferma per una data operazione
     :: Se l'esito è negativo lo script viene terminato
     :AskForUserConfirmation
-        set /P UserAnswer=Confermi di voler proseguire? (Y/N):
+        ::          %~1 [in] - Custom question
+        set QuestionText=%~1
+
+        if "%QuestionText%"=="" (
+            set /P UserAnswer="Confermi di voler proseguire? (Y/N) "
+        ) else (
+            set /P UserAnswer="%QuestionText% (Y/N) "
+        )
 
         :: converto la scelta utente in uppercase
         set UserAnswer=%UserAnswer:~0,1%
