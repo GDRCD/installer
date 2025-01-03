@@ -6,7 +6,7 @@ SETLOCAL DISABLEDELAYEDEXPANSION
 
 :::: Variabili di configurazione globale ::::
 
-    set Version=v0.8.7
+    set Version=v0.9.7
 
     :: Cartella dove si trova attualmente questo batch
     set InstallationFolder=%CD%
@@ -111,11 +111,20 @@ SETLOCAL DISABLEDELAYEDEXPANSION
     :: lancio la configurazione dello stack
     call :StackInstallAndStart
 
+    :: avvio il browser di default con l'indirizzo del container dove gira GDRCD
+    call :OpenDefaultBrowser "http://127.0.0.1:8900/GDRCD"
+
     :: termine programma
     goto Exit
 
 
 :::: Funzioni ::::
+
+    :: Apre il browser di default alla pagina indicata
+    :OpenDefaultBrowser
+        ::          %~1 [in] - URL
+        start "" %~1
+        exit /B 0
 
     :: Effettua il git clone del repository e si assicura di normalizzare l'uso del Line Feed per i files
     :GitClone
