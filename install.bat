@@ -94,11 +94,6 @@ SETLOCAL DISABLEDELAYEDEXPANSION
     call :FileReplaceValue "PMA_PORT=" "PMA_PORT=8901" %EnvFile%
     call :FileReplaceValue "MYSQL_DATABASE=" "MYSQL_DATABASE=gdrcd" %EnvFile%
 
-    :: rimuove eventuali CarriageReturn nel file .env
-    cd %InstallationFolder%
-    call wsl sed -i 's/\r//' .env
-    cd ..
-
     ::echo ErrorLevel: %ERRORLEVEL%
     :: rimuovo eventuali carriage return presenti nel file: non piace al sottosistema linux
     :: call wsl sed -i 's/\r//' ./stack/run
@@ -131,10 +126,14 @@ SETLOCAL DISABLEDELAYEDEXPANSION
 :::: Funzioni ::::
 
     :StackInstallAndStart
+        cd %InstallationFolder%
+        :: rimuove eventuali CarriageReturn nel file .env
+        call wsl sed -i 's/\r//' .env
         :: installa, builda i container e li avvia
-        call wsl sudo ./stack/run install
-        call wsl ./stack/run build
-        call wsl ./stack/run start
+        call wsl sudo ./run install
+        call wsl ./run build
+        call wsl ./run start
+        cd ..
         exit /B 0
 
     :: Verifica la presenza di wsl configurato, in caso non lo fosse
