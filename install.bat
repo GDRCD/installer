@@ -6,7 +6,7 @@ SETLOCAL ENABLEDELAYEDEXPANSION
 :::: Variabili di configurazione globale ::::  
 
     set "SoftwareName=GDRCD Installer"
-    set "Version=v1.0.0"
+    set "Version=v1.0.1"
 
     :: Cartella di installazione principale in Program Files
     set "InstallationFolder=%ProgramFiles%\GDRCD"
