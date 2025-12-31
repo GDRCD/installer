@@ -5,64 +5,64 @@ SETLOCAL ENABLEDELAYEDEXPANSION
 
 :::: Variabili di configurazione globale ::::  
 
-    set SoftwareName=GDRCD Installer
-    set Version=v1.0.0
+    set "SoftwareName=GDRCD Installer"
+    set "Version=v1.0.0"
 
     :: Cartella di installazione principale in Program Files
-    set InstallationFolder=%ProgramFiles%\GDRCD
+    set "InstallationFolder=%ProgramFiles%\GDRCD"
 
     :: Cartella per PHP
-    set PhpFolder=%InstallationFolder%\php\8.4
+    set "PhpFolder=%InstallationFolder%\php\8.4"
 
     :: Cartella per GDRCD web
-    set WebFolder=%InstallationFolder%\web
+    set "WebFolder=%InstallationFolder%\web"
 
     :: Cartella per MySQL (se installato manualmente)
-    set MysqlFolder=%InstallationFolder%\mysql
+    set "MysqlFolder=%InstallationFolder%\mysql"
 
     :: Cartella MySQL effettiva (sarà impostata durante l'installazione)
-    set MysqlBinFolder=
+    set "MysqlBinFolder="
 
     :: File marker per verificare l'installazione
-    set InstallMarker=%InstallationFolder%\.installed
+    set "InstallMarker=%InstallationFolder%\.installed"
 
     :: File batch di avvio
-    set StartBatchFile=%InstallationFolder%\gdrcd-start.bat
+    set "StartBatchFile=%InstallationFolder%\gdrcd-start.bat"
 
     :: Porta MySQL
-    set MysqlPort=3306
+    set "MysqlPort=3306"
 
     :: Password root MySQL (configurare in caso di installazione di MySQL esistente)
-    set MysqlRootPassword=
+    set "MysqlRootPassword=gdrcd"
 
     :: MySQL user
-    set MysqlUser=gdrcd
+    set "MysqlUser=gdrcd"
 
     :: MySQL user password
-    set MysqlUserPassword=gdrcd
+    set "MysqlUserPassword=gdrcd"
 
     :: Database name
-    set MysqlDatabase=gdrcd
+    set "MysqlDatabase=gdrcd"
 
     :: Porta del webserver PHP
-    set WebServerPort=8900
+    set "WebServerPort=8900"
 
     :: URL per l'API di PHP
-    set PhpApiUrl=https://dl.static-php.dev/static-php-cli/windows/spc-max/?format=json
+    set "PhpApiUrl=https://dl.static-php.dev/static-php-cli/windows/spc-max/?format=json"
 
     :: URL per l'API di GitHub releases
-    set GdrcdApiUrl=https://api.github.com/repos/GDRCD/GDRCD/releases/latest
+    set "GdrcdApiUrl=https://api.github.com/repos/GDRCD/GDRCD/releases/latest"
 
     :: File temporanei per i log delle operazioni
-    set MysqlInstallLog=%TEMP%\gdrcd_mysql_install.log
-    set PhpDownloadLog=%TEMP%\gdrcd_php_download.log
-    set GdrcdDownloadLog=%TEMP%\gdrcd_download.log
+    set "MysqlInstallLog=%TEMP%\gdrcd_mysql_install.log"
+    set "PhpDownloadLog=%TEMP%\gdrcd_php_download.log"
+    set "GdrcdDownloadLog=%TEMP%\gdrcd_download.log"
 
     title %SoftwareName% %Version%
 
 :::: Verifica privilegi amministrativi :::: 
 
-    ::  Detect if already elevated by checking for a marker parameter
+    :: Detect if already elevated by checking for a marker parameter
     if "%1"=="elevated" goto :ProgramStart
 
     :: Check if running as administrator
@@ -79,10 +79,10 @@ SETLOCAL ENABLEDELAYEDEXPANSION
         echo.
         pause >nul
         
-        ::  Try to elevate with marker parameter
+        :: Try to elevate with marker parameter
         powershell -Command "Start-Process -FilePath '%~f0' -ArgumentList 'elevated' -Verb RunAs"
         
-        ::  Exit the non-elevated instance
+        :: Exit the non-elevated instance
         exit /B 0
     )
 
@@ -95,7 +95,7 @@ SETLOCAL ENABLEDELAYEDEXPANSION
         :: verifica se l'ambiente è già installato
         if exist "%InstallMarker%" (
             echo.     
-            echo L'ambiente GDRCD è già installato in: %InstallationFolder%
+            echo L'ambiente GDRCD e' gia' installato in: %InstallationFolder%
             echo.  
             echo Per reinstallare, elimina la cartella "%InstallationFolder%" ed esegui nuovamente questo script.  
             echo.  
@@ -136,7 +136,7 @@ SETLOCAL ENABLEDELAYEDEXPANSION
         call :PrintHeader "FASE 2/5: Installazione MySQL 8.0" "INFO"
         echo. 
         echo Apertura finestra di installazione MySQL...
-        echo Attendi il completamento d^ell'installazione nella finestra separata.
+        echo Attendi il completamento dell'installazione nella finestra separata.
         echo.
         
         call :DownloadAndInstallMysql
@@ -150,7 +150,7 @@ SETLOCAL ENABLEDELAYEDEXPANSION
         call :PrintHeader "FASE 3/5: Download e installazione PHP 8.4" "INFO"
         echo.
         echo Apertura finestra di download PHP...
-        echo Attendi il completamento d^el download nella finestra separata. 
+        echo Attendi il completamento del download nella finestra separata. 
         echo.
         
         call :DownloadAndInstallPhp
@@ -200,7 +200,7 @@ SETLOCAL ENABLEDELAYEDEXPANSION
         echo Installazione completata > "%InstallMarker%"
 
         echo.
-        call :PrintHeader "INSTALLAZIONE COMPLETATA ^CON SUCCESSO!" "SUCCESS"
+        call :PrintHeader "INSTALLAZIONE COMPLETATA CON SUCCESSO!" "SUCCESS"
         echo.   
         echo Dettagli installazione:  
         echo   - MySQL 8.0: Installato e configurato
@@ -219,7 +219,7 @@ SETLOCAL ENABLEDELAYEDEXPANSION
         echo   - Doppio click su "Avvia GDRCD" sul desktop
         echo   - Oppure esegui:  "%StartBatchFile%"
         echo.  
-        echo Il server sarà accessibile su: http://localhost:%WebServerPort%
+        echo Il server sara' accessibile su: http://localhost:%WebServerPort%
         echo.
         call :PrintHeaderLine
         echo.  
@@ -251,7 +251,7 @@ SETLOCAL ENABLEDELAYEDEXPANSION
             call :SubPrintHeaderLine
             echo echo.  
             echo.   
-            echo "%PhpFolder%\php. exe" -S localhost:%WebServerPort% -t "%WebFolder%"
+            echo "%PhpFolder%\php.exe" -S localhost:%WebServerPort% -t "%WebFolder%"
             echo.  
             echo pause
         ) > "%StartBatchFile%"
@@ -277,14 +277,13 @@ SETLOCAL ENABLEDELAYEDEXPANSION
         call :FindMysqlInstallation
         
         if defined MysqlBinFolder (
-            echo MySQL e' gia' installato in: %MysqlBinFolder%
-            echo Utilizzo installazione esistente. 
-            echo. 
+            echo MySQL gia installato in: %MysqlBinFolder%
+            echo Utilizzo installazione esistente.
             exit /B 0
         )
 
-        ::  Creo uno script temporaneo per l'installazione
-        set TempInstallScript=%TEMP%\gdrcd_mysql_install.bat
+        :: Creo uno script temporaneo per l'installazione
+        set "TempInstallScript=%TEMP%\gdrcd_mysql_install.bat"
         
         (
             echo @echo OFF
@@ -300,9 +299,9 @@ SETLOCAL ENABLEDELAYEDEXPANSION
             echo     echo. 
             
             echo    if exist "%ProgramFiles(x86)%\MySQL\MySQL Installer for Windows\MySQLInstaller.exe" ^(
-            echo        start "" "%ProgramFiles(x86)%\MySQL\MySQL Installer for Windows\MySQLInstaller.exe"
+            echo        powershell -Command "Start-Process '%ProgramFiles(x86)%\MySQL\MySQL Installer for Windows\MySQLInstaller.exe' -Verb RunAs"
             echo    ^) else if exist "%ProgramFiles%\MySQL\MySQL Installer for Windows\MySQLInstaller.exe" ^(
-            echo        start "" "%ProgramFiles%\MySQL\MySQL Installer for Windows\MySQLInstaller.exe"
+            echo        powershell -Command "Start-Process '%ProgramFiles%\MySQL\MySQL Installer for Windows\MySQLInstaller.exe' -Verb RunAs"
             echo    ^) else ^(
             echo        echo.
             echo        echo MySQL Installer non trovato nelle posizioni standard. 
@@ -318,7 +317,7 @@ SETLOCAL ENABLEDELAYEDEXPANSION
             echo echo.
             echo pause
             
-            call :SubPrintHeader "MySQL installato ^con successo!" "SUCCESS"
+            call :SubPrintHeader "MySQL installato con successo!" "SUCCESS"
             echo     echo SUCCESS ^> "%MysqlInstallLog%"
             echo ^) else ^(
             echo     echo. 
@@ -337,12 +336,12 @@ SETLOCAL ENABLEDELAYEDEXPANSION
         :: Verifico il risultato
         if exist "%MysqlInstallLog%" (
             findstr /C:"SUCCESS" "%MysqlInstallLog%" >nul 2>&1
-            if ! ERRORLEVEL! EQU 0 (
-                call :PrintHeader "MySQL installato ^con successo!" "SUCCESS"
+            if !ERRORLEVEL! EQU 0 (
+                call :PrintHeader "MySQL installato con successo!" "SUCCESS"
                 del "%MysqlInstallLog%" >nul 2>&1
                 del "%TempInstallScript%" >nul 2>&1
                 
-                ::  Attendo e trovo MySQL
+                :: Attendo e trovo MySQL
                 timeout /t 3 /nobreak >nul
                 call :FindMysqlInstallation
                 exit /B 0
@@ -394,65 +393,39 @@ SETLOCAL ENABLEDELAYEDEXPANSION
     :ConfigureMysql
         :: no params
         :: no return
-
+    
         echo Configurazione MySQL...  
-
+    
         :: Trovo MySQL se non già trovato
         if not defined MysqlBinFolder (
             call :FindMysqlInstallation
         )
-
+    
         if not defined MysqlBinFolder (
-            echo.   
+            echo.    
             call :PrintHeader "ERRORE: MySQL non trovato nel sistema!" "ERROR"
             echo. 
             echo Verifica che MySQL sia stato installato correttamente.
             pause
             goto Exit
         )
-
+    
         echo MySQL trovato in: %MysqlBinFolder%
-
-        :: Verifico se il servizio MySQL è già in esecuzione
-        sc query MySQL >nul 2>&1
-        if %ERRORLEVEL% EQU 0 (
-            echo Avvio servizio MySQL... 
-            net start MySQL >nul 2>&1
-            timeout /t 5 /nobreak >nul
-        ) else (
-            sc query MySQL80 >nul 2>&1
-            if %ERRORLEVEL% EQU 0 (
-                echo Avvio servizio MySQL80...
-                net start MySQL80 >nul 2>&1
-                timeout /t 5 /nobreak >nul
-            ) else (
-                sc query MySQL84 >nul 2>&1
-                if %ERRORLEVEL% EQU 0 (
-                    echo Avvio servizio MySQL84...
-                    net start MySQL84 >nul 2>&1
-                    timeout /t 5 /nobreak >nul
-                ) else (
-                    call :PrintHeader "ATTENZIONE: Servizio MySQL non trovato" "ERROR"
-                    pause
-                    goto Exit
-                )
-            )
-        )
-
-        echo Configurazione database e utenti... 
+    
+        echo Configurazione database e utenti...  
         echo. 
-
+    
         :: Tento di connettermi come root senza password
-        "%MysqlBinFolder%\mysql. exe" -u root --skip-password -e "SELECT 1" >nul 2>&1
+        "%MysqlBinFolder%\mysql.exe" -u root --skip-password -e "SELECT 1" >nul 2>&1
         
-        if %ERRORLEVEL% EQU 0 (
-            :: Nuova installazione - nessuna password root
-            echo Rilevata nuova installazione MySQL (nessuna password root).
+        if !ERRORLEVEL! EQU 0 (
+            ::  Nuova installazione - nessuna password root
+            echo Rilevata nuova installazione MySQL ^(nessuna password root^)
             echo Configurazione in corso...
             "%MysqlBinFolder%\mysql.exe" -u root --skip-password -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '%MysqlRootPassword%'; CREATE DATABASE IF NOT EXISTS %MysqlDatabase%; CREATE USER IF NOT EXISTS '%MysqlUser%'@'localhost' IDENTIFIED BY '%MysqlUserPassword%'; GRANT ALL PRIVILEGES ON %MysqlDatabase%.* TO '%MysqlUser%'@'localhost'; FLUSH PRIVILEGES;" >nul 2>&1
             
-            if ! ERRORLEVEL! EQU 0 (
-                call :PrintHeader "MySQL configurato ^con successo!" "SUCCESS"
+            if !ERRORLEVEL! EQU 0 (
+                call :PrintHeader "MySQL configurato con successo!" "SUCCESS"
                 exit /B 0
             ) else (
                 call :PrintHeader "ERRORE durante la configurazione di MySQL." "ERROR"
@@ -460,52 +433,53 @@ SETLOCAL ENABLEDELAYEDEXPANSION
                 goto Exit
             )
         )
-
+    
         :: Provo con la password predefinita dello script
         "%MysqlBinFolder%\mysql.exe" -u root -p%MysqlRootPassword% -e "SELECT 1" >nul 2>&1
         
-        if %ERRORLEVEL% EQU 0 (
+        if !ERRORLEVEL! EQU 0 (
             :: Password corrisponde a quella dello script
-            echo MySQL ha gia' la password configurata dallo script.
-            echo Aggiornamento configurazione...
+            echo MySQL ha gia la password configurata dallo script
+            echo Aggiornamento configurazione
             "%MysqlBinFolder%\mysql.exe" -u root -p%MysqlRootPassword% -e "CREATE DATABASE IF NOT EXISTS %MysqlDatabase%; CREATE USER IF NOT EXISTS '%MysqlUser%'@'localhost' IDENTIFIED BY '%MysqlUserPassword%'; GRANT ALL PRIVILEGES ON %MysqlDatabase%.* TO '%MysqlUser%'@'localhost'; FLUSH PRIVILEGES;" >nul 2>&1
             
-            if ! ERRORLEVEL! EQU 0 (
-                call :PrintHeader "Database configurato ^con successo!" "SUCCESS"
+            if !ERRORLEVEL! EQU 0 (
+                call : PrintHeader "Database configurato con successo!" "SUCCESS"
                 exit /B 0
             ) else (
-                call :PrintHeader "ERRORE nella configurazione d^el database." "ERROR"
+                call :PrintHeader "ERRORE nella configurazione del database" "ERROR"
                 pause
+                exit /B 1
             )
-            exit /B 0
         )
-
+    
         :: La password root è diversa - chiedo all'utente
         echo. 
-        call :PrintHeader "MySQL ha già una password root configurata." "INFO"
+        call :PrintHeader "MySQL ha gia' una password root configurata." "INFO"
         echo.
-        echo Per configurare il database GDRCD è necessaria la password di root.
+        echo Per configurare il database GDRCD e' necessaria la password di root.
         echo.
         
-        set /P ExistingRootPassword="Inserisci la password di root di MySQL: "
+        set "ExistingRootPassword="
+        set /P "ExistingRootPassword=Inserisci la password di root di MySQL: "
         
         if "!ExistingRootPassword!"=="" (
             echo. 
             call :PrintHeader "Password non inserita. Configurazione annullata." "ERROR"
             goto Exit
         )
-
+    
         :: Verifico la password inserita
-        "%MysqlBinFolder%\mysql.exe" -u root -p!ExistingRootPassword!  -e "SELECT 1" >nul 2>&1
+        "%MysqlBinFolder%\mysql. exe" -u root -p! ExistingRootPassword!  -e "SELECT 1" >nul 2>&1
         
-        if ! ERRORLEVEL! EQU 0 (
+        if !ERRORLEVEL! EQU 0 (
             echo. 
             echo Password corretta! Configurazione in corso...
             "%MysqlBinFolder%\mysql.exe" -u root -p!ExistingRootPassword! -e "CREATE DATABASE IF NOT EXISTS %MysqlDatabase%; CREATE USER IF NOT EXISTS '%MysqlUser%'@'localhost' IDENTIFIED BY '%MysqlUserPassword%'; GRANT ALL PRIVILEGES ON %MysqlDatabase%.* TO '%MysqlUser%'@'localhost'; FLUSH PRIVILEGES;" >nul 2>&1
             
-            if ! ERRORLEVEL! EQU 0 (
+            if !ERRORLEVEL! EQU 0 (
                 echo. 
-                call :PrintHeader "MySQL configurato ^con successo!" "SUCCESS"
+                call :PrintHeader "MySQL configurato con successo!" "SUCCESS"
                 echo.
                 echo NOTA: La password di root di MySQL rimane quella esistente.
                 echo       Per GDRCD usa le credenziali:  %MysqlUser% / %MysqlUserPassword%
@@ -513,14 +487,14 @@ SETLOCAL ENABLEDELAYEDEXPANSION
                 exit /B 0
             ) else (
                 echo.
-                call :PrintHeader "ERRORE durante la configurazione d^el database." "ERROR"
+                call :PrintHeader "ERRORE durante la configurazione del database." "ERROR"
                 echo Verifica i permessi di root. 
                 pause
                 goto Exit
             )
         ) else (
             echo.
-            call :PrintHeader "ERRORE: Password non corretta!" "ERROR"
+            call :PrintHeader "ERRORE:  Password non corretta!" "ERROR"
             echo.
             echo Opzioni:
             echo 1. Ri-esegui lo script e inserisci la password corretta
@@ -530,11 +504,11 @@ SETLOCAL ENABLEDELAYEDEXPANSION
             echo    CREATE USER IF NOT EXISTS '%MysqlUser%'@'localhost' IDENTIFIED BY '%MysqlUserPassword%';
             echo    GRANT ALL PRIVILEGES ON %MysqlDatabase%.* TO '%MysqlUser%'@'localhost';
             echo    FLUSH PRIVILEGES;
-            echo.
+            echo. 
             pause
             goto Exit
         )
-
+    
         exit /B 0
 
     :: Download e installazione di PHP 8.4
@@ -543,7 +517,7 @@ SETLOCAL ENABLEDELAYEDEXPANSION
         :: no return
 
         :: Creo uno script temporaneo per il download
-        set TempPhpScript=%TEMP%\gdrcd_php_download.bat
+        set "TempPhpScript=%TEMP%\gdrcd_php_download.bat"
         
         (
             echo @echo OFF
@@ -559,9 +533,9 @@ SETLOCAL ENABLEDELAYEDEXPANSION
             echo     powershell -Command "& {Expand-Archive -Path '%TEMP%\\php84.zip' -DestinationPath '%PhpFolder%' -Force}"
             echo     del "%TEMP%\\php84.zip" ^>nul 2^>^&1
             echo     echo. 
-            call :SubPrintHeader "PHP 8.4 installato ^con successo!" "SUCCESS"
+            call :SubPrintHeader "PHP 8.4 installato con successo!" "SUCCESS"
             echo     echo SUCCESS ^> "%PhpDownloadLog%"
-            echo     timeout /t 3 /nobreak >nul
+            echo     timeout /t 3 /nobreak ^>nul
             echo ^) else ^(
             echo     echo.
             call :SubPrintHeader "ERRORE durante il download di PHP" "ERROR"
@@ -573,10 +547,10 @@ SETLOCAL ENABLEDELAYEDEXPANSION
             echo.
         ) > "%TempPhpScript%"
 
-        ::  Eseguo lo script in una nuova finestra e attendo
+        :: Eseguo lo script in una nuova finestra e attendo
         start "Download PHP 8.4" /wait cmd /c "%TempPhpScript%"
 
-        ::  Verifico il risultato
+        :: Verifico il risultato
         if exist "%PhpDownloadLog%" (
             findstr /C:"SUCCESS" "%PhpDownloadLog%" >nul 2>&1
             if !ERRORLEVEL! EQU 0 (
@@ -600,7 +574,7 @@ SETLOCAL ENABLEDELAYEDEXPANSION
         :: no return
 
         :: Creo uno script temporaneo per il download
-        set TempGdrcdScript=%TEMP%\gdrcd_gdrcd_download.bat
+        set "TempGdrcdScript=%TEMP%\gdrcd_gdrcd_download.bat"
         
         (
             echo @echo OFF
@@ -616,7 +590,7 @@ SETLOCAL ENABLEDELAYEDEXPANSION
             echo     del "%TEMP%\\gdrcd.zip" ^>nul 2^>^&1
             echo     rd /s /q "%TEMP%\\gdrcd_temp" ^>nul 2^>^&1
             echo     echo.
-            call :SubPrintHeader "GDRCD installato ^con successo!" "SUCCESSS"
+            call :SubPrintHeader "GDRCD installato con successo!" "SUCCESS"
             echo     echo SUCCESS ^> "%GdrcdDownloadLog%"
             echo     timeout /t 3 /nobreak ^>nul
             echo ^) else ^(
@@ -638,7 +612,7 @@ SETLOCAL ENABLEDELAYEDEXPANSION
             if !ERRORLEVEL! EQU 0 (
                 del "%GdrcdDownloadLog%" >nul 2>&1
                 del "%TempGdrcdScript%" >nul 2>&1
-                call :PrintHeader "GDRCD installato ^con successo!" "SUCCESSS"
+                call :PrintHeader "GDRCD installato con successo!" "SUCCESS"
                 echo. 
                 exit /B 0
             )
@@ -655,16 +629,16 @@ SETLOCAL ENABLEDELAYEDEXPANSION
     :: Se l'esito è negativo lo script viene terminato
     :AskForUserConfirmation
         :: %~1 [in] - Custom question
-        set QuestionText=%~1
+        set "QuestionText=%~1"
 
         if "%QuestionText%"=="" (
-            set /P UserAnswer="Confermi di voler proseguire? (Y/N) "
+            set /P "UserAnswer=Confermi di voler proseguire? (Y/N) "
         ) else (
-            set /P UserAnswer="%QuestionText% (Y/N) "
+            set /P "UserAnswer=%QuestionText% (Y/N) "
         )
 
         :: converto la scelta utente in uppercase
-        set UserAnswer=%UserAnswer:~0,1%
+        set "UserAnswer=%UserAnswer:~0,1%"
 
         if /i "%UserAnswer%" neq "Y" (
             goto Exit
